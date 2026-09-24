@@ -1,0 +1,155 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #08090b;
+  --bg-elevated: #0f1114;
+  --panel: rgba(255, 255, 255, 0.04);
+  --panel-border: rgba(255, 255, 255, 0.09);
+  --fg: #f4f5f7;
+  --fg-muted: #9aa0ac;
+
+  --accent-violet: #8b5cf6;
+  --accent-cyan: #22d3ee;
+  --accent-gold: #f5c451;
+
+  --rarity-common: #b9c0cc;
+  --rarity-uncommon: #3ddc84;
+  --rarity-rare: #3d9bfa;
+  --rarity-epic: #b46bff;
+  --rarity-legendary: #f5c451;
+  --rarity-grail-1: #ff5f6d;
+  --rarity-grail-2: #ffc371;
+  --rarity-grail-3: #7afcff;
+  --rarity-grail-4: #b46bff;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-bg-elevated: var(--bg-elevated);
+  --color-panel: var(--panel);
+  --color-panel-border: var(--panel-border);
+  --color-fg: var(--fg);
+  --color-fg-muted: var(--fg-muted);
+  --color-accent-violet: var(--accent-violet);
+  --color-accent-cyan: var(--accent-cyan);
+  --color-accent-gold: var(--accent-gold);
+  --color-rarity-common: var(--rarity-common);
+  --color-rarity-uncommon: var(--rarity-uncommon);
+  --color-rarity-rare: var(--rarity-rare);
+  --color-rarity-epic: var(--rarity-epic);
+  --color-rarity-legendary: var(--rarity-legendary);
+  --font-display: var(--font-unbounded);
+  --font-body: var(--font-inter);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  position: relative;
+  min-height: 100%;
+}
+
+.font-display {
+  font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Grain texture overlay */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.045;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+  background-size: 180px 180px;
+}
+
+.bg-mesh {
+  background:
+    radial-gradient(60% 50% at 15% 10%, rgba(139, 92, 246, 0.22), transparent 60%),
+    radial-gradient(55% 45% at 85% 15%, rgba(34, 211, 238, 0.16), transparent 60%),
+    radial-gradient(50% 50% at 50% 100%, rgba(245, 196, 81, 0.1), transparent 60%),
+    var(--bg);
+}
+
+.glass {
+  background: var(--panel);
+  border: 1px solid var(--panel-border);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
+
+.text-gradient {
+  background: linear-gradient(90deg, var(--accent-violet), var(--accent-cyan) 55%, var(--accent-gold));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.border-gradient {
+  position: relative;
+  border: 1px solid transparent;
+  background:
+    linear-gradient(var(--bg-elevated), var(--bg-elevated)) padding-box,
+    linear-gradient(120deg, var(--accent-violet), var(--accent-cyan), var(--accent-gold)) border-box;
+}
+
+/* Rarity glow ring, used on foil-card borders + buttons */
+.rarity-ring-common { box-shadow: 0 0 0 1px var(--rarity-common), 0 0 24px -6px var(--rarity-common); }
+.rarity-ring-uncommon { box-shadow: 0 0 0 1px var(--rarity-uncommon), 0 0 24px -4px var(--rarity-uncommon); }
+.rarity-ring-rare { box-shadow: 0 0 0 1px var(--rarity-rare), 0 0 28px -4px var(--rarity-rare); }
+.rarity-ring-epic { box-shadow: 0 0 0 1px var(--rarity-epic), 0 0 32px -4px var(--rarity-epic); }
+.rarity-ring-legendary { box-shadow: 0 0 0 1px var(--rarity-legendary), 0 0 38px -2px var(--rarity-legendary); }
+.rarity-ring-grail {
+  box-shadow: 0 0 0 1.5px transparent, 0 0 46px -2px rgba(255, 190, 120, 0.8);
+  background-image: conic-gradient(from 0deg, var(--rarity-grail-1), var(--rarity-grail-2), var(--rarity-grail-3), var(--rarity-grail-4), var(--rarity-grail-1));
+  animation: grail-spin 4s linear infinite;
+}
+
+@keyframes grail-spin {
+  to { filter: hue-rotate(360deg); }
+}
+
+@keyframes foil-sheen {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+
+.scrollbar-none::-webkit-scrollbar { display: none; }
+.scrollbar-none { scrollbar-width: none; }
+
+@keyframes float-y {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-14px); }
+}
+.animate-float { animation: float-y 5s ease-in-out infinite; }
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.animate-marquee { animation: marquee 32s linear infinite; }
+
+@keyframes pulse-ring {
+  0% { transform: scale(0.9); opacity: 0.8; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+
+/* Streamer mode: chroma-key friendly flat green background option */
+.chroma-bg {
+  background: #00ff59 !important;
+}
+.chroma-bg .bg-mesh {
+  background: #00ff59;
+}

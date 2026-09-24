@@ -1,0 +1,105 @@
+{
+  "packs": [
+    {
+      "id": "ember-starter",
+      "tier": "starter",
+      "name": "Kindle Pack",
+      "price": 60,
+      "cardsPerPack": 4,
+      "description": "The on-ramp. Every ripper starts here — low stakes, real slabs.",
+      "topPull": "Rare",
+      "image": "starter",
+      "featured": false,
+      "weights": { "common": 68, "uncommon": 24, "rare": 7, "epic": 1 }
+    },
+    {
+      "id": "voltage-starter",
+      "tier": "starter",
+      "name": "Voltage Pack",
+      "price": 90,
+      "cardsPerPack": 4,
+      "description": "A hotter common curve for rippers who've outgrown Kindle.",
+      "topPull": "Rare",
+      "image": "starter-alt",
+      "featured": false,
+      "weights": { "common": 60, "uncommon": 30, "rare": 9, "epic": 1 }
+    },
+    {
+      "id": "tidebreak-mid",
+      "tier": "mid",
+      "name": "Tidebreak Pack",
+      "price": 220,
+      "cardsPerPack": 5,
+      "description": "Real epic odds, a legendary shot worth chasing.",
+      "topPull": "Legendary",
+      "image": "mid",
+      "featured": true,
+      "weights": { "common": 45, "uncommon": 32, "rare": 16, "epic": 6, "legendary": 1 }
+    },
+    {
+      "id": "umbral-mid",
+      "tier": "mid",
+      "name": "Umbral Pack",
+      "price": 260,
+      "cardsPerPack": 5,
+      "description": "Shade-locked pulls skew rarer, but nothing's guaranteed.",
+      "topPull": "Legendary",
+      "image": "mid-alt",
+      "featured": false,
+      "weights": { "common": 40, "uncommon": 33, "rare": 19, "epic": 7, "legendary": 1 },
+      "guaranteedMinRarity": "uncommon"
+    },
+    {
+      "id": "caldera-high",
+      "tier": "high-roller",
+      "name": "Caldera Pack",
+      "price": 750,
+      "cardsPerPack": 6,
+      "description": "High-roller territory. Legendary odds that actually mean something.",
+      "topPull": "Legendary",
+      "image": "high",
+      "featured": true,
+      "weights": { "common": 20, "uncommon": 34, "rare": 28, "epic": 15, "legendary": 3 },
+      "guaranteedMinRarity": "rare"
+    },
+    {
+      "id": "aetherfall-high",
+      "tier": "high-roller",
+      "name": "Aetherfall Pack",
+      "price": 900,
+      "cardsPerPack": 6,
+      "description": "The sharpest legendary curve outside Grail Hunter.",
+      "topPull": "Legendary",
+      "image": "high-alt",
+      "featured": false,
+      "weights": { "common": 15, "uncommon": 30, "rare": 32, "epic": 18, "legendary": 5 },
+      "guaranteedMinRarity": "rare"
+    },
+    {
+      "id": "grail-hunter",
+      "tier": "grail-hunter",
+      "name": "Grail Hunter Pack",
+      "price": 2000,
+      "cardsPerPack": 6,
+      "description": "Built for one reason: the rainbow foil. Every slot can hit.",
+      "topPull": "Grail",
+      "image": "grail",
+      "featured": true,
+      "weights": { "common": 0, "uncommon": 18, "rare": 34, "epic": 32, "legendary": 14.5, "grail": 1.5 },
+      "guaranteedMinRarity": "rare"
+    },
+    {
+      "id": "perfect-cut",
+      "tier": "perfect-cut",
+      "name": "The Perfect Cut",
+      "price": 1000,
+      "cardsPerPack": 1,
+      "description": "One glowing line. One swipe from memory. Precision decides the prize table.",
+      "topPull": "Grail",
+      "image": "perfect-cut",
+      "featured": true,
+      "weights": { "epic": 55, "legendary": 40, "grail": 5 },
+      "guaranteedMinRarity": "epic"
+    }
+  ]
+}
