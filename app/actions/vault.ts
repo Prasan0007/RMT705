@@ -5,6 +5,7 @@ import { auth } from "@/auth";
 import { db } from "@/lib/db";
 import { cardById } from "@/lib/card-catalog";
 import { sellBackOffer } from "@/lib/pricing";
+import { sendShipRequestedEmail } from "@/lib/email";
 
 interface ActionResult {
   ok: boolean;
@@ -76,7 +77,8 @@ export async function shipAction(vaultItemId: string, address: ShipAddress): Pro
     return { ok: false, error: "Fill in the full shipping address." };
   }
 
-  await db.$transaction([
+  const [user] = await db.$transaction([
+    db.user.findUniqueOrThrow({ where: { id: userId }, select: { email: true } }),
     db.vaultItem.update({ where: { id: vaultItemId }, data: { status: "SHIP_REQUESTED" } }),
     db.order.create({
       data: {
@@ -92,6 +94,9 @@ export async function shipAction(vaultItemId: string, address: ShipAddress): Pro
       },
     }),
   ]);
+
+  const card = cardById(item.cardId);
+  sendShipRequestedEmail(user.email, card.name).catch((err) => console.error("ship-requested email failed", err));
 
   revalidatePath("/vault");
   return { ok: true };

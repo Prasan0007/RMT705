@@ -3,6 +3,8 @@
 import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { db } from "@/lib/db";
+import { cardById } from "@/lib/card-catalog";
+import { sendShippedEmail } from "@/lib/email";
 
 interface ActionResult {
   ok: boolean;
@@ -20,7 +22,10 @@ export async function markShippedAction(orderId: string, trackingNumber: string,
   if (!adminId) return { ok: false, error: "Admin access required." };
   if (!trackingNumber.trim() || !carrier.trim()) return { ok: false, error: "Tracking number and carrier are required." };
 
-  const order = await db.order.findUnique({ where: { id: orderId } });
+  const order = await db.order.findUnique({
+    where: { id: orderId },
+    include: { user: { select: { email: true } }, vaultItem: { select: { cardId: true } } },
+  });
   if (!order) return { ok: false, error: "Order not found." };
 
   await db.$transaction([
@@ -30,6 +35,11 @@ export async function markShippedAction(orderId: string, trackingNumber: string,
     }),
     db.vaultItem.update({ where: { id: order.vaultItemId }, data: { status: "SHIPPED" } }),
   ]);
+
+  const card = cardById(order.vaultItem.cardId);
+  sendShippedEmail(order.user.email, card.name, carrier, trackingNumber).catch((err) =>
+    console.error("shipped email failed", err)
+  );
 
   revalidatePath("/admin/orders");
   return { ok: true };

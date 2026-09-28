@@ -22,7 +22,9 @@ Before you take a single real payment:
 - Form a real business entity (LLC at minimum) and get a lawyer to review your target
   jurisdictions' rules on randomized real-money rewards.
 - Decide on age verification / KYC if your counsel says it's required where you operate.
-- Write real Terms of Service and a Privacy Policy (not included here).
+- Have counsel review and finish `/terms` and `/privacy` (`app/terms`, `app/privacy`) — they're
+  real pages with real structure, but every `[bracketed]` line needs your entity's specifics and a
+  legal sign-off before you rely on them.
 - Only then set `STRIPE_SECRET_KEY` to a **live** key. Everything in this repo runs against
   Stripe **test mode** until you do that — real payments literally cannot happen by accident.
 
@@ -59,7 +61,17 @@ NEXTAUTH_URL="http://localhost:3000"   # your real domain in production
 4. Use Stripe's [test card numbers](https://stripe.com/docs/testing) (e.g. `4242 4242 4242 4242`,
    any future expiry, any CVC) to buy tokens without moving real money.
 
-### 4. Run it
+### 4. Email (optional in dev)
+
+1. Sign up at [resend.com](https://resend.com), verify a sending domain (or use their shared
+   `onboarding@resend.dev` sender for testing), and grab an API key from
+   [resend.com/api-keys](https://resend.com/api-keys) → `RESEND_API_KEY`.
+2. Set `EMAIL_FROM` to your verified sender, e.g. `FOILFALL <hello@yourdomain.com>`.
+3. Without `RESEND_API_KEY` set, every email (welcome, password reset, shipping updates) just logs
+   to the server console instead of sending — handy for local dev, but grab the reset link from
+   there if you need to actually test that flow.
+
+### 5. Run it
 
 ```bash
 npm install
@@ -70,7 +82,7 @@ npm run dev
 Open [http://localhost:3000](http://localhost:3000), sign up (new accounts start with 100 free
 tokens), and rip a pack.
 
-### 5. Make yourself an admin
+### 6. Make yourself an admin
 
 Sign up normally, then either:
 
@@ -90,21 +102,24 @@ the section above first.
 
 - `app/` — routes: landing, `/store` (Token Store), `/packs` (Pack Shop), `/rip/[packId]` (Rip Room),
   `/vault`, `/leaderboard` (Live Feed), `/perfect-cut` (signature $1,000 pack), `/admin` (ops panel,
-  ADMIN role only), `/login` + `/signup`.
+  ADMIN role only), `/login`, `/signup`, `/forgot-password`, `/reset-password`, and the info/legal
+  pages (`/terms`, `/privacy`, `/odds-disclosure`, `/provably-fair`, `/support`).
 - `app/actions/` — server actions: `rip.ts` (server-resolved pack pulls), `perfect-cut.ts`
   (server-resolved precision scoring), `vault.ts` (sell-back / showcase / ship), `checkout.ts`
-  (Stripe Checkout session), `admin.ts` (fulfillment + manual token grants).
+  (Stripe Checkout session), `admin.ts` (fulfillment + manual token grants). Auth actions
+  (signup/login/logout/password reset) live in `app/(auth)/actions.ts`.
 - `app/api/stripe/webhook/` — the one thing that has to be a real HTTP route instead of a server
   action, since Stripe calls it directly.
 - `components/` — grouped by feature (`cards`, `packs`, `rip`, `vault`, `perfect-cut`, `streamer`,
-  `three`, `effects`, `common`, `layout`, `admin`, `auth`).
+  `three`, `effects`, `common`, `layout`, `admin`, `auth`, `legal`).
 - `lib/` — the odds engine (`odds.ts`, `packs-config.json`), card catalog, the Perfect Cut
   precision-scoring math, Prisma client (`db.ts`), leaderboard aggregation queries
-  (`leaderboard.ts`), and the zustand store — now holding only client-only UI preferences
-  (streamer mode, chroma key), since account data lives in Postgres.
+  (`leaderboard.ts`), email sending (`email.ts`), rate limiting (`rate-limit.ts`), and the zustand
+  store — now holding only client-only UI preferences (streamer mode, chroma key), since account
+  data lives in Postgres.
 - `prisma/schema.prisma` — `User`, `TokenTransaction` (the full ledger — every balance change is
   logged), `VaultItem`, `PullEvent`, `PerfectCutRound`, `Order`, `WebhookEvent` (Stripe webhook
-  idempotency).
+  idempotency), `PasswordResetToken`, `AuthAttempt` (rate limiting).
 
 ## What's real vs. what still needs you
 
@@ -113,7 +128,9 @@ server-side pack-pull resolution (the client can't influence what it pulls), ser
 Cut scoring (the client only supplies swipe coordinates — the true line, the score, and the card
 are all resolved server-side), Stripe Checkout + webhook crediting tokens, sell-back, ship
 requests creating real `Order` rows, an admin fulfillment queue, a real leaderboard computed from
-real pulls (no fabricated entries).
+real pulls (no fabricated entries), password reset, rate-limited login/signup (including an
+IP-based cap on signups so the welcome bonus can't be bot-farmed), and transactional email
+(welcome, password reset, ship-requested, shipped) via Resend.
 
 **Still needs you, because it's not code:**
 
@@ -122,8 +139,8 @@ real pulls (no fabricated entries).
   number, but doesn't generate shipping labels yet. Wiring a carrier API (Shippo, EasyPost) into
   `app/actions/admin.ts` is the natural next step once you have a real fulfillment process to
   drive it.
-- The legal groundwork covered above.
-- Transactional email (order confirmations, shipping updates) — none is sent yet.
+- The legal groundwork covered above — `/terms` and `/privacy` are real, structured pages, not
+  filler, but they're templates until a lawyer fills in your specifics and signs off.
 
 ## Notes on fairness
 

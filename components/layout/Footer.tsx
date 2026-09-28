@@ -18,9 +18,14 @@ export function Footer() {
             </div>
             <div className="flex flex-col gap-2">
               <span className="font-semibold text-fg">Company</span>
-              <span className="text-fg-muted">Provably Fair</span>
-              <span className="text-fg-muted">Odds Disclosure</span>
-              <span className="text-fg-muted">Support</span>
+              <Link href="/provably-fair" className="text-fg-muted hover:text-fg">Provably Fair</Link>
+              <Link href="/odds-disclosure" className="text-fg-muted hover:text-fg">Odds Disclosure</Link>
+              <Link href="/support" className="text-fg-muted hover:text-fg">Support</Link>
+            </div>
+            <div className="flex flex-col gap-2">
+              <span className="font-semibold text-fg">Legal</span>
+              <Link href="/terms" className="text-fg-muted hover:text-fg">Terms of Service</Link>
+              <Link href="/privacy" className="text-fg-muted hover:text-fg">Privacy Policy</Link>
             </div>
           </div>
         </div>
