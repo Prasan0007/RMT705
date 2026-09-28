@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useTransition } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { TearPack } from "./TearPack";
@@ -8,11 +8,12 @@ import { CardRevealFlow } from "./CardRevealFlow";
 import { Pack3DLazy } from "@/components/three/Pack3DLazy";
 import { ProvablyFairBadge } from "@/components/common/ProvablyFairBadge";
 import { TIER_THEME } from "@/components/packs/tierTheme";
-import { getPack, simulatePull, gradeForCard } from "@/lib/odds";
-import { randomSeed } from "@/lib/rng";
-import { useAppStore } from "@/lib/store";
+import { getPack } from "@/lib/odds";
+import { cardById } from "@/lib/card-catalog";
+import { useUiStore } from "@/lib/store";
+import { ripPackAction } from "@/app/actions/rip";
 import { formatTokens } from "@/lib/utils";
-import type { CardDef, VaultItem } from "@/lib/types";
+import type { CardDef } from "@/lib/types";
 
 type Phase = "intro" | "tearing" | "revealing" | "complete";
 
@@ -22,40 +23,35 @@ interface ResultItem {
   serial: string;
 }
 
-export function RipRoomClient({ packId }: { packId: string }) {
+export function RipRoomClient({ packId, initialTokens }: { packId: string; initialTokens: number }) {
   const pack = getPack(packId);
-  const tokens = useAppStore((s) => s.tokens);
-  const spendTokens = useAppStore((s) => s.spendTokens);
-  const addVaultItems = useAppStore((s) => s.addVaultItems);
-  const pushRipHistory = useAppStore((s) => s.pushRipHistory);
-  const streamerMode = useAppStore((s) => s.streamerMode);
+  const streamerMode = useUiStore((s) => s.streamerMode);
+  const pushRipHistory = useUiStore((s) => s.pushRipHistory);
 
+  const [tokens, setTokens] = useState(initialTokens);
   const [phase, setPhase] = useState<Phase>("intro");
   const [seed, setSeed] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [results, setResults] = useState<ResultItem[]>([]);
+  const [pending, startTransition] = useTransition();
 
   const theme = pack ? TIER_THEME[pack.tier] : TIER_THEME.starter;
-
   const canAfford = pack ? tokens >= pack.price : false;
 
   function startRip() {
-    if (!pack) return;
-    if (!spendTokens(pack.price)) {
-      setError("Not enough tokens for this pack.");
-      return;
-    }
+    if (!pack || pending) return;
     setError(null);
-    const s = randomSeed();
-    setSeed(s);
-    const cards = simulatePull(pack, s);
-    const items: ResultItem[] = cards.map((card, i) => ({
-      card,
-      grade: gradeForCard(card, s),
-      serial: `FF-${(100000 + Math.floor(Math.random() * 899999)).toString()}-${i}`,
-    }));
-    setResults(items);
-    setPhase("tearing");
+    startTransition(async () => {
+      const res = await ripPackAction(pack.id);
+      if (!res.ok) {
+        setError(res.error);
+        return;
+      }
+      setTokens(res.balanceAfter);
+      setSeed(res.seed);
+      setResults(res.items.map((i) => ({ card: cardById(i.cardId), grade: i.grade, serial: i.serial })));
+      setPhase("tearing");
+    });
   }
 
   function onTearComplete() {
@@ -63,15 +59,6 @@ export function RipRoomClient({ packId }: { packId: string }) {
   }
 
   function onAllRevealed() {
-    const vaultItems: VaultItem[] = results.map((r) => ({
-      instanceId: `${r.serial}-${Math.random().toString(36).slice(2, 8)}`,
-      cardId: r.card.id,
-      grade: r.grade,
-      pulledAt: new Date().toISOString(),
-      packId: pack!.id,
-      serial: r.serial,
-    }));
-    addVaultItems(vaultItems);
     results.forEach((r) => {
       pushRipHistory({ id: r.serial, cardId: r.card.id, grade: r.grade, timestamp: new Date().toISOString() });
     });
@@ -87,7 +74,7 @@ export function RipRoomClient({ packId }: { packId: string }) {
     return (
       <div className="mx-auto max-w-lg px-4 py-24 text-center">
         <h1 className="font-display text-2xl font-bold">Pack not found</h1>
-        <p className="mt-2 text-fg-muted">That pack doesn&apos;t exist in this demo catalog.</p>
+        <p className="mt-2 text-fg-muted">That pack doesn&apos;t exist in the catalog.</p>
         <Link href="/packs" className="mt-6 inline-block rounded-full bg-white/10 px-5 py-2.5 text-sm font-semibold">
           Back to Pack Shop
         </Link>
@@ -126,9 +113,10 @@ export function RipRoomClient({ packId }: { packId: string }) {
             {canAfford ? (
               <button
                 onClick={startRip}
-                className="mt-6 w-full max-w-xs rounded-full bg-gradient-to-r from-accent-violet to-accent-cyan py-3.5 font-bold text-black shadow-[0_0_30px_-6px_rgba(139,92,246,0.7)] transition-transform hover:scale-[1.02]"
+                disabled={pending}
+                className="mt-6 w-full max-w-xs rounded-full bg-gradient-to-r from-accent-violet to-accent-cyan py-3.5 font-bold text-black shadow-[0_0_30px_-6px_rgba(139,92,246,0.7)] transition-transform hover:scale-[1.02] disabled:opacity-60"
               >
-                Rip Pack — {formatTokens(pack.price)} tokens
+                {pending ? "Ripping…" : `Rip Pack — ${formatTokens(pack.price)} tokens`}
               </button>
             ) : (
               <Link

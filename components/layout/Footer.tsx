@@ -25,7 +25,7 @@ export function Footer() {
           </div>
         </div>
         <div className="mt-10 border-t border-white/[0.06] pt-6 text-xs text-fg-muted">
-          Demo build. Mock data and mock checkout only — no real payments are processed.
+          Token purchases are processed securely through Stripe. We never see or store your card details.
           <div className="mt-1">© {new Date().getFullYear()} FOILFALL. All creatures and card frames are original placeholder designs.</div>
         </div>
       </div>

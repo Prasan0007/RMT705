@@ -42,16 +42,6 @@ export interface PackDef {
   featured?: boolean;
 }
 
-export interface VaultItem {
-  instanceId: string;
-  cardId: string;
-  grade: number;
-  pulledAt: string;
-  packId: string;
-  serial: string;
-  showcased?: boolean;
-}
-
 export interface PullRecord {
   id: string;
   user: string;

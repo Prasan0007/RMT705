@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { useAppStore } from "@/lib/store";
+import { useUiStore } from "@/lib/store";
 import { cardById } from "@/lib/card-catalog";
 import { RARITY_LABEL } from "@/lib/types";
 import { RarityDot } from "@/components/common/GlassPanel";
@@ -10,10 +10,10 @@ import { cn } from "@/lib/utils";
 /** On-screen overlay shown only in Streamer Mode: a running pull-history rail
  * viewers can watch without seeing the streamer's private token balance. */
 export function StreamerOverlay() {
-  const streamerMode = useAppStore((s) => s.streamerMode);
-  const chromaKey = useAppStore((s) => s.chromaKey);
-  const toggleChromaKey = useAppStore((s) => s.toggleChromaKey);
-  const history = useAppStore((s) => s.ripHistory);
+  const streamerMode = useUiStore((s) => s.streamerMode);
+  const chromaKey = useUiStore((s) => s.chromaKey);
+  const toggleChromaKey = useUiStore((s) => s.toggleChromaKey);
+  const history = useUiStore((s) => s.ripHistory);
 
   if (!streamerMode) return null;
 

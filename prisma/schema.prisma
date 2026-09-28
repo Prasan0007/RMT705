@@ -1,0 +1,159 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum TxType {
+  WELCOME_BONUS
+  PURCHASE
+  RIP_SPEND
+  PERFECT_CUT_SPEND
+  SELL_BACK
+  ADMIN_GRANT
+  ADMIN_ADJUST
+}
+
+enum VaultStatus {
+  VAULTED
+  SHIP_REQUESTED
+  SHIPPED
+  SOLD
+}
+
+enum OrderStatus {
+  REQUESTED
+  LABEL_CREATED
+  SHIPPED
+  DELIVERED
+  CANCELED
+}
+
+enum CutTier {
+  ELITE
+  PREMIUM
+  STANDARD
+}
+
+enum CutStatus {
+  PENDING
+  RESOLVED
+  EXPIRED
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  role         Role     @default(USER)
+  tokenBalance Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  transactions TokenTransaction[]
+  vaultItems   VaultItem[]
+  pulls        PullEvent[]
+  cutRounds    PerfectCutRound[]
+  orders       Order[]
+}
+
+model TokenTransaction {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type            TxType
+  amount          Int
+  balanceAfter    Int
+  stripeSessionId String?
+  note            String?
+  createdAt       DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
+
+model VaultItem {
+  id        String      @id @default(cuid())
+  userId    String
+  user      User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cardId    String
+  grade     Float
+  serial    String      @unique
+  packId    String
+  status    VaultStatus @default(VAULTED)
+  showcased Boolean     @default(false)
+  pulledAt  DateTime    @default(now())
+
+  order Order?
+
+  @@index([userId, pulledAt])
+}
+
+model PullEvent {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  packId    String
+  seed      String
+  cardIds   String[]
+  grades    Float[]
+  cost      Int
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
+
+model PerfectCutRound {
+  id         String    @id @default(cuid())
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  seed       String
+  cost       Int
+  trueLine   Json
+  userLine   Json?
+  precision  Float?
+  tier       CutTier?
+  cardId     String?
+  grade      Float?
+  status     CutStatus @default(PENDING)
+  createdAt  DateTime  @default(now())
+  resolvedAt DateTime?
+
+  @@index([userId, createdAt])
+}
+
+model Order {
+  id              String      @id @default(cuid())
+  userId          String
+  user            User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  vaultItemId     String      @unique
+  vaultItem       VaultItem   @relation(fields: [vaultItemId], references: [id], onDelete: Cascade)
+  status          OrderStatus @default(REQUESTED)
+  recipientName   String
+  addressLine1    String
+  addressLine2    String?
+  city            String
+  region          String
+  postalCode      String
+  country         String
+  trackingNumber  String?
+  carrier         String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  @@index([userId, createdAt])
+}
+
+model WebhookEvent {
+  id          String   @id
+  type        String
+  processedAt DateTime @default(now())
+}

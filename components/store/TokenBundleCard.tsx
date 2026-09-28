@@ -1,19 +1,24 @@
 "use client";
 
+import { useState, useTransition } from "react";
 import { motion } from "framer-motion";
 import type { TokenBundle } from "@/lib/types";
 import { formatTokens, formatUsd } from "@/lib/utils";
+import { createCheckoutSessionAction } from "@/app/actions/checkout";
 
-export function TokenBundleCard({
-  bundle,
-  onSelect,
-  highlighted,
-}: {
-  bundle: TokenBundle;
-  onSelect: () => void;
-  highlighted?: boolean;
-}) {
+export function TokenBundleCard({ bundle, highlighted }: { bundle: TokenBundle; highlighted?: boolean }) {
   const bonusTokens = Math.round((bundle.tokens * bundle.bonusPct) / 100);
+  const [pending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+
+  function buy() {
+    setError(null);
+    startTransition(async () => {
+      const res = await createCheckoutSessionAction(bundle.id);
+      // A successful call redirects and never returns here.
+      if (res && !res.ok) setError(res.error);
+    });
+  }
 
   return (
     <motion.div
@@ -40,11 +45,13 @@ export function TokenBundleCard({
       <div className="mt-5 font-mono text-xl font-bold">{formatUsd(bundle.priceUsd)}</div>
 
       <button
-        onClick={onSelect}
-        className="mt-5 w-full rounded-full bg-white/10 py-2.5 text-sm font-semibold transition-colors hover:bg-gradient-to-r hover:from-accent-violet hover:to-accent-cyan hover:text-black"
+        onClick={buy}
+        disabled={pending}
+        className="mt-5 w-full rounded-full bg-white/10 py-2.5 text-sm font-semibold transition-colors hover:bg-gradient-to-r hover:from-accent-violet hover:to-accent-cyan hover:text-black disabled:opacity-60"
       >
-        Buy Bundle
+        {pending ? "Redirecting to checkout…" : "Buy Bundle"}
       </button>
+      {error && <p className="mt-2 text-xs text-red-400">{error}</p>}
     </motion.div>
   );
 }

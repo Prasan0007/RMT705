@@ -1,13 +1,21 @@
 "use client";
 
-import { RECENT_PULLS } from "@/lib/mock-data";
 import { cardById } from "@/lib/card-catalog";
-import { RARITY_LABEL } from "@/lib/types";
+import { RARITY_LABEL, type PullRecord } from "@/lib/types";
 import { RarityDot } from "@/components/common/GlassPanel";
 import { formatTokens } from "@/lib/utils";
 
-export function RecentPullsTicker() {
-  const items = [...RECENT_PULLS, ...RECENT_PULLS];
+export function RecentPullsTicker({ pulls }: { pulls: PullRecord[] }) {
+  if (pulls.length === 0) {
+    return (
+      <div className="border-y border-white/[0.06] bg-white/[0.02] py-3 text-center text-xs text-fg-muted">
+        No pulls yet — be the first name on this ticker.
+      </div>
+    );
+  }
+
+  // Loop the feed so the marquee has enough width to scroll continuously.
+  const items = pulls.length < 6 ? [...pulls, ...pulls, ...pulls] : [...pulls, ...pulls];
 
   return (
     <div className="relative overflow-hidden border-y border-white/[0.06] bg-white/[0.02] py-3">
